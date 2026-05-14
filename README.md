@@ -1,5 +1,7 @@
 # FEIP-ClothingStore
 ---
+## Название команды: VibeMobile
+---
 ## 📱 О платформе и стеке
 ---
 - **Платформа:** Android
