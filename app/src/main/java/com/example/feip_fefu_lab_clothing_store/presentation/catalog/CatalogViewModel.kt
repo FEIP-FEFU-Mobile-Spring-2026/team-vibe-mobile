@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class CatalogViewModel(
     private val repository: ProductRepository,
-    private val savedStateHandle: SavedStateHandle
+    val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CatalogUiState>(CatalogUiState.Loading)

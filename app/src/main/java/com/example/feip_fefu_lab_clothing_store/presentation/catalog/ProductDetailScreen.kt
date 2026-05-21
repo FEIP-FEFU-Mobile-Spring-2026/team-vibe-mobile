@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import coil3.compose.AsyncImage
 import com.example.feip_fefu_lab_clothing_store.data.model.ProductDto
 
@@ -24,8 +25,12 @@ import com.example.feip_fefu_lab_clothing_store.data.model.ProductDto
 @Composable
 fun ProductDetailScreen(
     product: ProductDto,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    savedStateHandle: SavedStateHandle
 ) {
+    val KEY_SELECTED_SIZE = "selected_size_${product.id}"
+    var selectedSize by remember { mutableStateOf(savedStateHandle.get<String>(KEY_SELECTED_SIZE) ?: "XXS") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -44,7 +49,6 @@ fun ProductDetailScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Изображение
             AsyncImage(
                 model = product.imageUrl,
                 contentDescription = product.name,
@@ -55,7 +59,6 @@ fun ProductDetailScreen(
                     .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
             )
 
-            // Контент
             Column(modifier = Modifier.padding(16.dp)) {
                 if (product.tags.contains("New")) {
                     Surface(
@@ -87,11 +90,8 @@ fun ProductDetailScreen(
             
             Spacer(modifier = Modifier.weight(1f))
 
-            // Footer с размерами и ценой
             Column(modifier = Modifier.padding(16.dp)) {
-                // Размеры
                 val sizes = listOf("XXS", "XS", "S", "M", "L", "XL")
-                var selectedSize by remember { mutableStateOf(sizes[0]) }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -100,7 +100,11 @@ fun ProductDetailScreen(
                         Surface(
                             modifier = Modifier
                                 .size(48.dp)
-                                .clickable { selectedSize = size },
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { 
+                                    selectedSize = size
+                                    savedStateHandle[KEY_SELECTED_SIZE] = size
+                                },
                             shape = RoundedCornerShape(8.dp),
                             color = if (size == selectedSize) Color(0xFF6D4C41) else Color(0xFFF5F5F5)
                         ) {
@@ -113,7 +117,6 @@ fun ProductDetailScreen(
                 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Кнопка
                 Button(
                     onClick = { /* Add to cart */ },
                     modifier = Modifier.fillMaxWidth().height(56.dp),

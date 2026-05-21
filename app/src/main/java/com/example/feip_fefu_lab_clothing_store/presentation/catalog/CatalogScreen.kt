@@ -29,7 +29,8 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
     if (selectedProduct != null) {
         ProductDetailScreen(
             product = selectedProduct,
-            onBackClick = { viewModel.selectProduct(null) }
+            onBackClick = { viewModel.selectProduct(null) },
+            savedStateHandle = viewModel.savedStateHandle
         )
     } else {
         Scaffold(
