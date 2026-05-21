@@ -38,7 +38,18 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 when (val currentState = state) {
                     is CatalogUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    is CatalogUiState.Error -> Text("Ошибка", modifier = Modifier.align(Alignment.Center))
+                    is CatalogUiState.Error -> {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "Ошибка", color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(onClick = { viewModel.loadCatalog() }) {
+                            Text("Повторить")
+                        }
+                    }
+                }
                     is CatalogUiState.Success -> {
                         Column(modifier = Modifier.fillMaxSize()) {
                             ScrollableTabRow(
