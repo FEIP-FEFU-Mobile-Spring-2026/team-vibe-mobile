@@ -23,13 +23,13 @@ import java.util.Locale
 @Composable
 fun CatalogScreen(viewModel: CatalogViewModel) {
     val state by viewModel.uiState.collectAsState()
-
-    var selectedProduct by remember { mutableStateOf<ProductDto?>(null) }
+    val selectedProductId by viewModel.selectedProductId.collectAsState()
+    val selectedProduct = (state as? CatalogUiState.Success)?.products?.find { it.id == selectedProductId }
 
     if (selectedProduct != null) {
         ProductDetailScreen(
-            product = selectedProduct!!,
-            onBackClick = { selectedProduct = null }
+            product = selectedProduct,
+            onBackClick = { viewModel.selectProduct(null) }
         )
     } else {
         Scaffold(
@@ -43,7 +43,7 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "Ошибка", color = MaterialTheme.colorScheme.error)
+                        Text(text = "Ошибка: ${currentState.message}", color = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(onClick = { viewModel.loadCatalog() }) {
                             Text("Повторить")
@@ -73,7 +73,7 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
                             }
                             LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 items(currentState.products) { product ->
-                                    ProductRow(product = product, onClick = { selectedProduct = product })
+                                    ProductRow(product = product, onClick = { viewModel.selectProduct(product.id) })
                                 }
                             }
                         }

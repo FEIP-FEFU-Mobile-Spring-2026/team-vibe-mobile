@@ -20,12 +20,19 @@ class CatalogViewModel(
     val uiState: StateFlow<CatalogUiState> = _uiState.asStateFlow()
 
     private val KEY_SELECTED_CATEGORY = "selected_category_id"
+    private val KEY_SELECTED_PRODUCT_ID = "selected_product_id"
     
     private var allCategories: List<CategoryDto> = emptyList()
     private var allProducts: List<ProductDto> = emptyList()
 
+    val selectedProductId: StateFlow<String?> = savedStateHandle.getStateFlow(KEY_SELECTED_PRODUCT_ID, null)
+
     init {
         loadCatalog()
+    }
+
+    fun selectProduct(productId: String?) {
+        savedStateHandle[KEY_SELECTED_PRODUCT_ID] = productId
     }
 
     fun loadCatalog() {
