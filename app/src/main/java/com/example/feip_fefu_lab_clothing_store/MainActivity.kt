@@ -3,66 +3,47 @@ package com.example.feip_fefu_lab_clothing_store
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.feip_fefu_lab_clothing_store.data.repository.ProductRepository
+import com.example.feip_fefu_lab_clothing_store.presentation.catalog.CatalogScreen
+import com.example.feip_fefu_lab_clothing_store.presentation.catalog.CatalogViewModel
+import com.example.feip_fefu_lab_clothing_store.presentation.navigation.MainScreenContainer
 import com.example.feip_fefu_lab_clothing_store.ui.theme.FEIPFEFULABCLOTHINGSTORETheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        
+        val repository = ProductRepository(applicationContext)
+
         setContent {
             FEIPFEFULABCLOTHINGSTORETheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainScreen()
+                val catalogViewModel: CatalogViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(
+                            modelClass: Class<T>,
+                            extras: CreationExtras
+                        ): T {
+                            val savedStateHandle = extras.createSavedStateHandle()
+                            return CatalogViewModel(repository, savedStateHandle) as T
+                        }
+                    }
+                )
+                
+                MainScreenContainer { paddingValues ->
+                    Box(modifier = androidx.compose.ui.Modifier.padding(paddingValues)) {
+                        CatalogScreen(viewModel = catalogViewModel)
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun MainScreen(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Добро пожаловать в ClothingStore",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Мобильное приложение для покупок одежды и аксессуаров!",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-            onClick = { /* Действие */ },
-            modifier = Modifier.fillMaxWidth(0.7f)
-        ) {
-            Text("Вход")
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun MainScreenPreview() {
-    FEIPFEFULABCLOTHINGSTORETheme {
-        MainScreen()
     }
 }
