@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,25 +34,29 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
             savedStateHandle = viewModel.savedStateHandle
         )
     } else {
-        Scaffold(
-            topBar = { CenterAlignedTopAppBar(title = { Text("Каталог") }) }
-        ) { paddingValues ->
+        Scaffold { paddingValues ->
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 when (val currentState = state) {
                     is CatalogUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     is CatalogUiState.Error -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "Ошибка: ${currentState.message}", color = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(onClick = { viewModel.loadCatalog() }) {
-                            Text("Повторить")
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = "Ошибка: ${currentState.message}", color = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(onClick = { viewModel.loadCatalog() }) {
+                                Text("Повторить")
+                            }
                         }
                     }
-                }
                     is CatalogUiState.Success -> {
+                        val listState = rememberLazyListState()
+
+                        LaunchedEffect(key1 = currentState.selectedCategoryId) {
+                            listState.scrollToItem(0)
+                        }
+
                         Column(modifier = Modifier.fillMaxSize()) {
                             ScrollableTabRow(
                                 selectedTabIndex = currentState.categories.indexOfFirst { it.id == currentState.selectedCategoryId }.coerceAtLeast(0),
@@ -72,7 +77,12 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
                                     )
                                 }
                             }
-                            LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+                            LazyColumn(
+                                state = listState,
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 items(currentState.products) { product ->
                                     ProductRow(product = product, onClick = { viewModel.selectProduct(product.id) })
                                 }
@@ -110,7 +120,7 @@ fun ProductRow(product: ProductDto, onClick: () -> Unit) {
                 Text(text = product.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(text = product.shortDescription, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Surface(color = Color(0xFFF4EFEF), shape = RoundedCornerShape(8.dp)) {
                     Text(
                         text = formatPrice(product.priceInKopecks),
