@@ -15,6 +15,12 @@ data class CategoryDto(
 )
 
 @Serializable
+data class SizeDto(
+    val id: String,
+    val name: String
+)
+
+@Serializable
 data class ProductDto(
     val id: String,
     val name: String,
@@ -23,5 +29,11 @@ data class ProductDto(
     val priceInKopecks: Long,
     val imageUrl: String,
     val tags: List<String> = emptyList(),
-    val categoryId: String
+    val categoryId: String,
+
+    val sizes: List<SizeDto> = emptyList(),
+    val material: String,
+    val weight: String,
+    val season: String,
+    val countryOfOrigin: String
 )
