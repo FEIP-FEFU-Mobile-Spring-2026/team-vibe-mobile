@@ -184,5 +184,22 @@ fun ProductDetailScreen(
     }
 
     if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text(text = "Характеристики") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Материал: ${product.material ?: "Не указано"}")
+                    Text("Вес: ${product.weight ?: "Не указано"}")
+                    Text("Сезон: ${product.season ?: "Не указано"}")
+                    Text("Страна: ${product.countryOfOrigin ?: "Не указано"}")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showInfoDialog = false }) {
+                    Text("OK", color = Color(0xFFA67B67))
+                }
+            }
+        )
     }
 }
