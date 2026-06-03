@@ -10,9 +10,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen() {
-    Scaffold(
-        topBar = { CenterAlignedTopAppBar(title = { Text("Корзина") }) }
-    ) { paddingValues ->
+    Scaffold{ paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()

@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,20 +27,13 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
     val selectedProductId by viewModel.selectedProductId.collectAsState()
     val selectedProduct = (state as? CatalogUiState.Success)?.products?.find { it.id == selectedProductId }
 
-    if (selectedProduct != null) {
-        ProductDetailScreen(
-            product = selectedProduct,
-            onBackClick = { viewModel.selectProduct(null) },
-            savedStateHandle = viewModel.savedStateHandle
-        )
-    } else {
-        Scaffold(
-            topBar = { CenterAlignedTopAppBar(title = { Text("Каталог") }) }
-        ) { paddingValues ->
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-                when (val currentState = state) {
-                    is CatalogUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    is CatalogUiState.Error -> {
+    Scaffold { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            when (val currentState = state) {
+                is CatalogUiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                is CatalogUiState.Error -> {
                     Column(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -51,36 +45,62 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
                         }
                     }
                 }
-                    is CatalogUiState.Success -> {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            ScrollableTabRow(
-                                selectedTabIndex = currentState.categories.indexOfFirst { it.id == currentState.selectedCategoryId }.coerceAtLeast(0),
-                                indicator = {},
-                                divider = {},
-                                edgePadding = 16.dp
-                            ) {
-                                currentState.categories.forEach { category ->
-                                    val isSelected = category.id == currentState.selectedCategoryId
-                                    Tab(
-                                        selected = isSelected,
-                                        onClick = { viewModel.selectCategory(category.id) },
-                                        modifier = Modifier
-                                            .padding(4.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(if (isSelected) Color(0xFF6D4C41) else Color(0xFFF5F5F5)),
-                                        text = { Text(category.name, color = if (isSelected) Color.White else Color.Black) }
-                                    )
-                                }
+                is CatalogUiState.Success -> {
+                    val listState = rememberLazyListState()
+
+                    LaunchedEffect(key1 = currentState.selectedCategoryId) {
+                        listState.scrollToItem(0)
+                    }
+
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        ScrollableTabRow(
+                            selectedTabIndex = currentState.categories.indexOfFirst { it.id == currentState.selectedCategoryId }.coerceAtLeast(0),
+                            indicator = {},
+                            divider = {},
+                            edgePadding = 16.dp
+                        ) {
+                            currentState.categories.forEach { category ->
+                                val isSelected = category.id == currentState.selectedCategoryId
+                                Tab(
+                                    selected = isSelected,
+                                    onClick = { viewModel.selectCategory(category.id) },
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(if (isSelected) Color(0xFF6D4C41) else Color(0xFFF5F5F5)),
+                                    text = { Text(category.name, color = if (isSelected) Color.White else Color.Black) }
+                                )
                             }
-                            LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                items(currentState.products) { product ->
-                                    ProductRow(product = product, onClick = { viewModel.selectProduct(product.id) })
-                                }
+                        }
+
+                        LazyColumn(
+                            state = listState,
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(currentState.products) { product ->
+                                ProductRow(product = product, onClick = { viewModel.selectProduct(product.id) })
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    if (selectedProduct != null) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.selectProduct(null) },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface
+        ) {
+            ProductDetailScreen(
+                product = selectedProduct,
+                onClose = { viewModel.selectProduct(null) },
+                savedStateHandle = viewModel.savedStateHandle
+            )
         }
     }
 }
@@ -110,7 +130,7 @@ fun ProductRow(product: ProductDto, onClick: () -> Unit) {
                 Text(text = product.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(text = product.shortDescription, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Surface(color = Color(0xFFF4EFEF), shape = RoundedCornerShape(8.dp)) {
                     Text(
                         text = formatPrice(product.priceInKopecks),
