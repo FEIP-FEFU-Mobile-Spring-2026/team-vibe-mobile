@@ -9,46 +9,49 @@ import com.example.feip_fefu_lab_clothing_store.data.model.ProductDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
-class CatalogViewModel(
-    private val repository: ProductRepository,
-    val savedStateHandle: SavedStateHandle
-) : ViewModel() {
-
+class CatalogViewModel(private val repository: ProductRepository, val savedStateHandle: SavedStateHandle) : ViewModel() {
     private val _uiState = MutableStateFlow<CatalogUiState>(CatalogUiState.Loading)
     val uiState: StateFlow<CatalogUiState> = _uiState.asStateFlow()
 
+    private val _networkErrorEvent = MutableSharedFlow<Unit>()
+    val networkErrorEvent: SharedFlow<Unit> = _networkErrorEvent.asSharedFlow()
+
     private val KEY_SELECTED_CATEGORY = "selected_category_id"
     private val KEY_SELECTED_PRODUCT_ID = "selected_product_id"
-    
+
     private var allCategories: List<CategoryDto> = emptyList()
     private var allProducts: List<ProductDto> = emptyList()
 
     val selectedProductId: StateFlow<String?> = savedStateHandle.getStateFlow(KEY_SELECTED_PRODUCT_ID, null)
 
-    init {
-        loadCatalog()
-    }
+    init { loadCatalog() }
 
-    fun selectProduct(productId: String?) {
-        savedStateHandle[KEY_SELECTED_PRODUCT_ID] = productId
-    }
+    fun isNetworkAvailable(): Boolean = repository.isNetworkAvailable()
+
+    fun selectProduct(productId: String?) { savedStateHandle[KEY_SELECTED_PRODUCT_ID] = productId }
 
     fun loadCatalog() {
         viewModelScope.launch {
-            _uiState.value = CatalogUiState.Loading
-            try {
-                val response = repository.getCatalogData()
-                
-                val newCategory = CategoryDto(id = "cat_new", name = "Новинки")
-                allCategories = listOf(newCategory) + response.categories
-                allProducts = response.items
-
-                val initialCategory = savedStateHandle.get<String>(KEY_SELECTED_CATEGORY) ?: "cat_new"
-                updateState(initialCategory)
-            } catch (e: Exception) {
-                _uiState.value = CatalogUiState.Error(e.localizedMessage ?: "Неизвестная ошибка")
+            if (_uiState.value !is CatalogUiState.Success) { _uiState.value = CatalogUiState.Loading }
+            if (!repository.isNetworkAvailable()) { _networkErrorEvent.emit(Unit) }
+            
+            repository.getCatalogDataFlow().collect { result ->
+                result.onSuccess { response ->
+                    val newCategory = CategoryDto(id = "cat_new", name = "Новинки")
+                    allCategories = listOf(newCategory) + response.categories
+                    allProducts = response.items
+                    val initialCategory = savedStateHandle.get<String>(KEY_SELECTED_CATEGORY) ?: "cat_new"
+                    updateState(initialCategory)
+                }.onFailure { e ->
+                    if (_uiState.value !is CatalogUiState.Success) {
+                         _uiState.value = CatalogUiState.Error("Ошибка загрузки. ${e.message}")
+                    }
+                }
             }
         }
     }
@@ -64,7 +67,6 @@ class CatalogViewModel(
         } else {
             allProducts.filter { it.categoryId == categoryId }
         }
-
         _uiState.value = CatalogUiState.Success(
             categories = allCategories,
             products = filteredProducts,
