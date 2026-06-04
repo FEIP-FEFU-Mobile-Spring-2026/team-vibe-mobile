@@ -1,4 +1,4 @@
-package com.example.feip_fefu_lab_clothing_store.presentation.catalog
+﻿package com.example.feip_fefu_lab_clothing_store.presentation.catalog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.feip_fefu_lab_clothing_store.data.model.ProductDto
 import java.util.Locale
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,8 +29,22 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
     val state by viewModel.uiState.collectAsState()
     val selectedProductId by viewModel.selectedProductId.collectAsState()
     val selectedProduct = (state as? CatalogUiState.Success)?.products?.find { it.id == selectedProductId }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    Scaffold { paddingValues ->
+    LaunchedEffect(Unit) {
+        viewModel.networkErrorEvent.collect {
+            snackbarHostState.showSnackbar(
+                message = "Нет сети",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {}
+    ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when (val currentState = state) {
                 is CatalogUiState.Loading -> {
@@ -53,6 +70,20 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
                     }
 
                     Column(modifier = Modifier.fillMaxSize()) {
+                        if (!viewModel.isNetworkAvailable()) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Нет сети",
+                                    modifier = Modifier.padding(8.dp),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            }
+                        }
                         ScrollableTabRow(
                             selectedTabIndex = currentState.categories.indexOfFirst { it.id == currentState.selectedCategoryId }.coerceAtLeast(0),
                             indicator = {},
@@ -149,3 +180,4 @@ fun formatPrice(kopecks: Long): String {
     val rubles = kopecks / 100.0
     return String.format(Locale.forLanguageTag("ru-RU"), "%,.0f", rubles).replace(",", " ") + " ₽"
 }
+
