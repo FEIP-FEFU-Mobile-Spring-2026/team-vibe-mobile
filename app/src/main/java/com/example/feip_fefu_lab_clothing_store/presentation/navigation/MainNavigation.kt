@@ -14,11 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.feip_fefu_lab_clothing_store.data.repository.CartRepository
 import com.example.feip_fefu_lab_clothing_store.presentation.cart.CartScreen
-
+import com.example.feip_fefu_lab_clothing_store.presentation.cart.CartViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenContainer(
     cartRepository: CartRepository,
+    cartViewModel: CartViewModel,
     content: @Composable (PaddingValues) -> Unit
 ) {
     var selectedRoute by rememberSaveable { mutableStateOf("catalog") }
@@ -62,7 +63,9 @@ fun MainScreenContainer(
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedRoute) {
                 "catalog" -> content(PaddingValues(0.dp))
-                "cart" -> CartScreen()
+                "cart" -> CartScreen(
+                    viewModel = cartViewModel,
+                    onNavigateToCatalog = { selectedRoute = "catalog" })
             }
         }
     }

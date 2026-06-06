@@ -17,7 +17,7 @@ import com.example.feip_fefu_lab_clothing_store.presentation.catalog.CatalogScre
 import com.example.feip_fefu_lab_clothing_store.presentation.catalog.CatalogViewModel
 import com.example.feip_fefu_lab_clothing_store.presentation.navigation.MainScreenContainer
 import com.example.feip_fefu_lab_clothing_store.ui.theme.FEIPFEFULABCLOTHINGSTORETheme
-
+import com.example.feip_fefu_lab_clothing_store.presentation.cart.CartViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +41,16 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                MainScreenContainer(cartRepository = cartRepository) { paddingValues ->
+                val cartViewModel: CartViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return CartViewModel(cartRepository) as T
+                        }
+                    }
+                )
+
+                MainScreenContainer(cartRepository = cartRepository, cartViewModel = cartViewModel) { paddingValues ->
                     Box(modifier = Modifier.padding(paddingValues)) {
                         CatalogScreen(viewModel = catalogViewModel)
                     }
