@@ -35,7 +35,6 @@ class MainActivity : ComponentActivity() {
                             extras: CreationExtras
                         ): T {
                             val savedStateHandle = extras.createSavedStateHandle()
-                            // 2. Добавляем cartRepository в конструктор CatalogViewModel
                             return CatalogViewModel(repository, cartRepository, savedStateHandle) as T
                         }
                     }

@@ -30,7 +30,6 @@ import java.util.Locale
 fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
     val cartItems by viewModel.cartItems.collectAsState()
 
-    // Подсчет итоговой суммы
     val totalPrice = cartItems.sumOf { it.priceInKopecks * it.quantity }
 
     Scaffold(
@@ -64,7 +63,6 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // 1. Список товаров
                     items(cartItems, key = { "${it.productId}_${it.sizeId}" }) { item ->
                         CartItemRow(
                             item = item,
@@ -76,7 +74,6 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
 
                     item { Spacer(modifier = Modifier.height(16.dp)) }
 
-                    // 2. Форма оформления заказа
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             OutlinedTextField(
@@ -105,7 +102,7 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
                                     unfocusedContainerColor = Color(0xFFF5F5F5),
                                     focusedContainerColor = Color(0xFFF5F5F5)
                                 ),
-                                isError = viewModel.email.isNotEmpty() && !viewModel.email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex())
+                                isError = viewModel.email.isNotEmpty() && !viewModel.isEmailValid
                             )
 
                             OutlinedTextField(
@@ -126,7 +123,6 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
 
                     item { Spacer(modifier = Modifier.height(24.dp)) }
 
-                    // 3. Итого и кнопка
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -161,7 +157,6 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
         }
     }
 
-    // Диалог очистки корзины
     if (viewModel.showClearDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.showClearDialog = false },
@@ -180,7 +175,6 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
         )
     }
 
-    // Шторка успешного оформления заказа
     if (viewModel.showSuccessSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -196,7 +190,7 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToCatalog: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Default.ShoppingCart, // Или используйте иконку успешной сумки
+                    imageVector = Icons.Default.ShoppingCart,
                     contentDescription = null,
                     modifier = Modifier.size(80.dp),
                     tint = Color.Gray
@@ -272,7 +266,6 @@ fun CartItemRow(
                     color = Color(0xFFA67B67)
                 )
 
-                // Контролы количества (+ / -)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)

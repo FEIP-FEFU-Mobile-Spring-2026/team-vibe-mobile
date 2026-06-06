@@ -22,10 +22,17 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
     var showClearDialog by mutableStateOf(false)
     var showSuccessSheet by mutableStateOf(false)
 
-    private val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+    private val nameRegex = "^[a-zA-Zа-яА-ЯёЁ\\s'-]+$".toRegex()
+    private val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$".toRegex()
+
+    private val isNameValid: Boolean
+        get() = name.isNotBlank() && name.matches(nameRegex)
+
+    val isEmailValid: Boolean
+        get() = email.matches(emailRegex)
 
     val isCheckoutValid: Boolean
-        get() = name.isNotBlank() && email.matches(emailRegex) && cartItems.value.isNotEmpty()
+        get() = isNameValid && isEmailValid && cartItems.value.isNotEmpty()
 
     fun incrementItem(productId: String, sizeId: String) = viewModelScope.launch {
         cartRepository.incrementItem(productId, sizeId)
