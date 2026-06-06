@@ -37,3 +37,13 @@ data class ProductDto(
     val season: String,
     val countryOfOrigin: String
 )
+
+data class CartItemUiModel(
+    val productId: String,
+    val sizeId: String,
+    val name: String,
+    val sizeName: String,
+    val priceInKopecks: Long,
+    val imageUrl: String,
+    val quantity: Int
+)

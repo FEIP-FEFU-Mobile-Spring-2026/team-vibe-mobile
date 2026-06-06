@@ -21,9 +21,9 @@ data class ProductEntity(
     val longDescription: String,
     val priceInKopecks: Long,
     val imageUrl: String,
-    val tags: String, // Stored as JSON
+    val tags: String,
     val categoryId: String,
-    val sizes: String, // Stored as JSON
+    val sizes: String,
     val material: String,
     val weight: String,
     val season: String,
