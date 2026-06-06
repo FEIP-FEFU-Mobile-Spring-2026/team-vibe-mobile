@@ -10,12 +10,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.feip_fefu_lab_clothing_store.data.repository.CartRepository
 import com.example.feip_fefu_lab_clothing_store.presentation.cart.CartScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreenContainer(content: @Composable (PaddingValues) -> Unit) {
+fun MainScreenContainer(
+    cartRepository: CartRepository,
+    content: @Composable (PaddingValues) -> Unit
+) {
     var selectedRoute by rememberSaveable { mutableStateOf("catalog") }
+
+    val cartItems by cartRepository.getCartUiItems().collectAsState(initial = emptyList())
+    val cartItemsCount = cartItems.sumOf { it.quantity }
 
     Scaffold(
         bottomBar = {
@@ -27,7 +36,22 @@ fun MainScreenContainer(content: @Composable (PaddingValues) -> Unit) {
                     onClick = { selectedRoute = "catalog" }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Корзина") },
+                    icon = {
+                        BadgedBox(
+                            badge = {
+                                if (cartItemsCount > 0) {
+                                    Badge(
+                                        containerColor = Color(0xFFA67B67),
+                                        contentColor = Color.White
+                                    ) {
+                                        Text(cartItemsCount.toString())
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.ShoppingCart, contentDescription = "Корзина")
+                        }
+                    },
                     label = { Text("Корзина") },
                     selected = selectedRoute == "cart",
                     onClick = { selectedRoute = "cart" }

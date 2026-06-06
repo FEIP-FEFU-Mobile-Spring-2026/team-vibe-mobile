@@ -26,7 +26,8 @@ import java.util.Locale
 fun ProductDetailScreen(
     product: ProductDto,
     onClose: () -> Unit,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    onAddToCartClick: (sizeId: String) -> Unit
 ) {
     val KEY_SELECTED_SIZE = "selected_size_${product.id}"
     var selectedSizeId by remember {
@@ -167,7 +168,12 @@ fun ProductDetailScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { onClose() },
+                onClick = {
+                    selectedSizeId?.let { sizeId ->
+                        onAddToCartClick(sizeId)
+                    }
+                    onClose()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
