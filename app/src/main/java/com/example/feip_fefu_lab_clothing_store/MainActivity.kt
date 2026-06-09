@@ -21,7 +21,8 @@ import com.example.feip_fefu_lab_clothing_store.presentation.cart.CartViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        
+        //Repominaria
         val repository = ProductRepository(applicationContext)
         val cartRepository = CartRepository(applicationContext, repository)
 
