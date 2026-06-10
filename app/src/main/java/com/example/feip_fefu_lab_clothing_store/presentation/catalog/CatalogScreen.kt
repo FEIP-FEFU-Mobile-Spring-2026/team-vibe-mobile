@@ -130,7 +130,10 @@ fun CatalogScreen(viewModel: CatalogViewModel) {
             ProductDetailScreen(
                 product = selectedProduct,
                 onClose = { viewModel.selectProduct(null) },
-                savedStateHandle = viewModel.savedStateHandle
+                savedStateHandle = viewModel.savedStateHandle,
+                onAddToCartClick = { sizeId ->
+                    viewModel.addProductToCart(selectedProduct.id, sizeId)
+                }
             )
         }
     }
